@@ -1,0 +1,130 @@
+# Deploys walkathon2026.nephrocareindia.com — Laravel + Vue + Inertia on EC2 (Nginx + PHP-FPM 8.3).
+# Place at: <walkathon2026-repo>/.github/workflows/deploy.yml
+#
+# Required repo secrets: SSH_HOST, SSH_USER, SSH_PRIVATE_KEY
+#
+# What it does:
+#   1. Builds the frontend (Vite) on GitHub, using the server's .env for build-time vars.
+#   2. Mirrors the code to the server with rsync --delete. Never uploaded or deleted:
+#      .env, vendor/, node_modules/, storage/, bootstrap/cache/*.php, public/storage
+#   3. On the server: composer install, migrate, optimize, restart queue workers, reload PHP-FPM.
+# Run manually with "Dry run" ticked first to see what would change.
+
+name: Deploy – walkathon2026.nephrocareindia.com
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: only list what would change / be deleted on the server"
+        type: boolean
+        default: true
+  # Enable after the first manual run succeeds:
+  # push:
+  #   branches: [main]
+
+concurrency:
+  group: deploy-walkathon2026
+  cancel-in-progress: false
+
+env:
+  APP_DIR: /srv/apps/walkathon2026
+  SITE_URL: https://walkathon2026.nephrocareindia.com
+  PHP_VERSION: "8.3"
+  # true only when started manually with the box ticked; push deploys are always real
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, xml, curl, zip, bcmath, intl, gd, pdo_mysql
+          tools: composer:v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+          printf "Host server\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/deploy_key\n" \
+            "${{ secrets.SSH_HOST }}" "${{ secrets.SSH_USER }}" >> ~/.ssh/config
+
+      # Vite bakes VITE_* vars into the build, and some Inertia setups (Ziggy, Wayfinder)
+      # run artisan during the build — so use the server's .env. It is never uploaded back.
+      - name: Fetch .env from server
+        run: scp "server:${APP_DIR}/.env" .env || cp .env.example .env
+
+      # vendor/ is needed here only for the frontend build (e.g. Ziggy); it is not uploaded.
+      - name: Composer install (for the build)
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Sync to server (mirror repo, delete stale files)
+        run: |
+          FLAGS="-az --delete --itemize-changes"
+          if [ "$DRY_RUN" = "true" ]; then
+            FLAGS="$FLAGS --dry-run"
+            echo "=== DRY RUN: nothing will be changed on the server ==="
+          fi
+          rsync $FLAGS \
+            --exclude='.env*' --exclude='.git' --exclude='.github' \
+            --exclude='/node_modules' --exclude='/vendor' \
+            --exclude='/storage' --exclude='/bootstrap/cache/*.php' \
+            --exclude='/public/storage' --exclude='/public/hot' \
+            ./ "server:${APP_DIR}/" | tee rsync.out
+          echo ""
+          echo "=== Files that would be / were DELETED on the server ==="
+          grep '^\*deleting' rsync.out || echo "(none)"
+
+      - name: Install, migrate, optimize, reload
+        if: env.DRY_RUN != 'true'
+        run: |
+          ssh server "APP_DIR='${APP_DIR}' PHP_VERSION='${PHP_VERSION}' bash -s" <<'EOF'
+          set -e
+          umask 002
+          cd "$APP_DIR"
+
+          # Writable dirs for Laravel (storage/ is never synced, so make sure it exists)
+          mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions \
+                   storage/framework/views storage/logs bootstrap/cache
+          sudo chgrp -R www-data storage bootstrap/cache
+          sudo chmod -R ug+rwX storage bootstrap/cache
+          sudo find storage bootstrap/cache -type d -exec chmod g+s {} +
+
+          composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+
+          # artisan runs as www-data (the PHP-FPM user) so cache/log files stay writable by the site
+          sudo -u www-data php artisan migrate --force
+          php artisan storage:link 2>/dev/null || true
+          sudo -u www-data php artisan optimize
+          sudo -u www-data php artisan queue:restart || true
+
+          # clear OPcache so PHP-FPM serves the new code
+          sudo systemctl reload "php${PHP_VERSION}-fpm"
+          EOF
+
+      - name: Health check
+        if: env.DRY_RUN != 'true'
+        run: |
+          sleep 3
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL")
+          echo "HTTP $code from $SITE_URL"
+          [ "$code" -ge 200 ] && [ "$code" -lt 500 ]
