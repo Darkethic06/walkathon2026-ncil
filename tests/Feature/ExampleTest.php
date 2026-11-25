@@ -82,9 +82,20 @@ it('stores a support ticket', function () {
         'name' => 'Rahul',
         'email' => 'rahul@example.com',
         'phone' => '8123456789',
+        'message' => 'I did not receive my bib confirmation email.',
     ])->assertRedirect()->assertSessionHas('success');
 
-    expect(SupportTicket::count())->toBe(1);
+    expect(SupportTicket::first()->message)->toBe('I did not receive my bib confirmation email.');
+});
+
+it('requires a message on a support ticket', function () {
+    $this->post('/support-ticket', [
+        'name' => 'Rahul',
+        'email' => 'rahul@example.com',
+        'phone' => '8123456789',
+    ])->assertSessionHasErrors(['message']);
+
+    expect(SupportTicket::count())->toBe(0);
 });
 
 function validRegistration(array $overrides = []): array

@@ -26,6 +26,7 @@ const td = "px-4 py-3 text-sm text-gray-900";
             </div>
             <a :href="`mailto:${t.email}`" class="block truncate text-sm text-teal-700">{{ t.email }}</a>
             <a :href="`tel:+91${t.phone}`" class="block text-sm text-teal-700">{{ t.phone }}</a>
+            <p v-if="t.message" class="mt-2 whitespace-pre-line break-words text-sm text-gray-700">{{ t.message }}</p>
             <p class="mt-1 text-xs text-gray-500">{{ fmtDateTime(t.created_at) }}</p>
         </div>
         <p v-if="!tickets.data.length" class="rounded-xl bg-white p-6 text-center text-gray-500 shadow">No support tickets yet.</p>
@@ -40,6 +41,7 @@ const td = "px-4 py-3 text-sm text-gray-900";
                     <th :class="th">Name</th>
                     <th :class="th">Email</th>
                     <th :class="th">Phone</th>
+                    <th :class="th">Message</th>
                     <th :class="th">Status</th>
                     <th :class="th">Raised</th>
                 </tr>
@@ -50,11 +52,12 @@ const td = "px-4 py-3 text-sm text-gray-900";
                     <td :class="td">{{ t.name }}</td>
                     <td :class="td"><a :href="`mailto:${t.email}`" class="text-teal-700">{{ t.email }}</a></td>
                     <td :class="td"><a :href="`tel:+91${t.phone}`" class="text-teal-700">{{ t.phone }}</a></td>
+                    <td :class="td" class="min-w-[16rem] max-w-md whitespace-pre-line break-words">{{ t.message || "—" }}</td>
                     <td :class="td">{{ t.status }}</td>
                     <td :class="td" class="whitespace-nowrap">{{ fmtDateTime(t.created_at) }}</td>
                 </tr>
                 <tr v-if="!tickets.data.length">
-                    <td :class="td" colspan="6" class="py-8 text-center text-gray-500">No support tickets yet.</td>
+                    <td :class="td" colspan="7" class="py-8 text-center text-gray-500">No support tickets yet.</td>
                 </tr>
             </tbody>
         </table>

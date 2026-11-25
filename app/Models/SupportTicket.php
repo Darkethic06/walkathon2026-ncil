@@ -10,6 +10,7 @@ class SupportTicket extends Model
         'name',
         'email',
         'phone',
+        'message',
         'status',
     ];
 }

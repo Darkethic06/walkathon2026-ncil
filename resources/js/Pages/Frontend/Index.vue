@@ -141,13 +141,19 @@ function submitRegistration() {
 }
 
 // ---------- support ticket popup ----------
-const ticket = useForm({ name: "", email: "", phone: "" });
+const ticket = useForm({ name: "", email: "", phone: "", message: "" });
 digitsOnly(ticket, "phone");
 
 const ticketV = makeValidator(ticket, {
     name: (v) => v.trim().length >= 2 || "Enter your name.",
     email: (v) => EMAIL.test(v) || "Enter a valid email, like name@example.com.",
     phone: (v) => MOBILE.test(v) || "Enter a 10 digit phone number.",
+    message: (v) => {
+        const len = v.trim().length;
+        if (!len) return "Tell us what you need help with.";
+        if (len < 10) return "Please describe your query in a little more detail.";
+        return len <= 2000 || "Please keep it under 2000 characters.";
+    },
 });
 
 const ticketModal = ref(null);
@@ -172,7 +178,7 @@ function onModalClick(e) {
 
 async function focusFirstTicketError() {
     await nextTick();
-    ticketModal.value?.querySelector(".invalid input")?.focus();
+    ticketModal.value?.querySelector(".invalid input, .invalid textarea")?.focus();
 }
 
 function submitTicket() {
@@ -515,8 +521,7 @@ onBeforeUnmount(() => {
                 <h3>Have a question related to the event?</h3>
                 <p class="ask">Ask the organiser</p>
                 <p class="org">NephroCare India Ltd.</p>
-                <!-- TODO: put the real number here and wrap it in <a href="tel:+91XXXXXXXXXX"> to make it tap-to-call -->
-                <span class="phone">+91 81XXX XXXXX</span>
+                <a class="phone" href="tel:+916292343601">+91 62923 43601</a>
                 <p class="hours">Mon-Fri (10 am to 6 pm)</p>
             </div>
 
@@ -555,6 +560,12 @@ onBeforeUnmount(() => {
                 <input id="tp" v-model="ticket.phone" name="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="10 digit number" autocomplete="tel-national" required
                     @blur="ticketV.check('phone')" @input="ticketV.recheck('phone')" />
                 <small class="err">{{ ticketV.errors.phone }}</small>
+            </div>
+            <div class="field" :class="{ invalid: ticketV.errors.message }">
+                <label for="tm">Message <span class="req">*</span></label>
+                <textarea id="tm" v-model="ticket.message" name="message" rows="4" maxlength="2000" placeholder="Describe your query or the issue you faced in detail." required
+                    @blur="ticketV.check('message')" @input="ticketV.recheck('message')"></textarea>
+                <small class="err">{{ ticketV.errors.message }}</small>
             </div>
 
             <button class="btn full" type="submit" :disabled="ticket.processing">
