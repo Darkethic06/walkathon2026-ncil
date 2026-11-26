@@ -21,6 +21,7 @@ const form = useForm({
     medical: "",
     privacy: false,
     sendEmail: true,
+    sendWhatsApp: true,
 });
 
 // Digits only, max 10, in phone fields.
@@ -117,14 +118,14 @@ const err = "mt-1 text-sm text-red-600";
         </div>
 
         <div>
-            <label for="emergency" :class="label">Emergency contact number *</label>
+            <label for="emergency" :class="label">Emergency contact number</label>
             <input id="emergency" v-model="form.emergency" type="tel" inputmode="numeric" maxlength="10" placeholder="Must differ from WhatsApp number" :class="input" />
             <p v-if="form.errors.emergency" data-error :class="err">{{ form.errors.emergency }}</p>
         </div>
 
         <div>
-            <label for="medical" :class="label">Medical history *</label>
-            <textarea id="medical" v-model="form.medical" rows="3" placeholder='Allergies, surgeries, medicines, conditions. "None" if nothing.' :class="input"></textarea>
+            <label for="medical" :class="label">Medical history</label>
+            <textarea id="medical" v-model="form.medical" rows="3" placeholder="Allergies, surgeries, medicines, conditions. Leave blank if nothing." :class="input"></textarea>
             <p v-if="form.errors.medical" data-error :class="err">{{ form.errors.medical }}</p>
         </div>
 
@@ -138,6 +139,11 @@ const err = "mt-1 text-sm text-red-600";
             <label class="flex items-start gap-3 text-sm text-gray-700">
                 <input v-model="form.sendEmail" type="checkbox" class="mt-0.5 h-5 w-5 flex-none rounded border-gray-300 text-teal-700 focus:ring-teal-600" />
                 <span>Email the bib number and QR code to the walker</span>
+            </label>
+
+            <label class="flex items-start gap-3 text-sm text-gray-700">
+                <input v-model="form.sendWhatsApp" type="checkbox" class="mt-0.5 h-5 w-5 flex-none rounded border-gray-300 text-teal-700 focus:ring-teal-600" />
+                <span>WhatsApp the bib number and bib page link to the walker</span>
             </label>
         </div>
 

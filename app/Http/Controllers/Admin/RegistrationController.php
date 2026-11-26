@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\SendBibConfirmationMail;
+use App\Jobs\SendBibWhatsApp;
 use App\Models\WalkathonRegistration;
 use App\Support\RegistrationForm;
 use App\Support\Roles;
@@ -58,7 +59,7 @@ class RegistrationController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate(
-            RegistrationForm::rules() + ['sendEmail' => ['boolean']],
+            RegistrationForm::rules() + ['sendEmail' => ['boolean'], 'sendWhatsApp' => ['boolean']],
             RegistrationForm::messages() + ['privacy.accepted' => 'Confirm the walker has agreed to the Privacy Policy.'],
         );
 
@@ -68,6 +69,9 @@ class RegistrationController extends Controller
 
         if ($request->boolean('sendEmail')) {
             SendBibConfirmationMail::dispatchAfterResponse($registration);
+        }
+        if ($request->boolean('sendWhatsApp')) {
+            SendBibWhatsApp::dispatchAfterResponse($registration);
         }
 
         return redirect()->route('admin.registrations.show', $registration)
@@ -121,7 +125,7 @@ class RegistrationController extends Controller
                     (string) $r->whatsapp,
                     (string) $r->emergency_contact,
                     $r->address,
-                    $r->medical_history,
+                    $r->medical_history ?? '',
                     $fmt($r->created_at),
                     $r->createdBy?->full_name ?? 'Website',
                     $r->mail_sent_at ? 'Sent' : 'Not sent',

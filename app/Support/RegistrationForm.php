@@ -34,8 +34,8 @@ final class RegistrationForm
             'dob' => ['required', 'date', 'before_or_equal:'.$latestDob],
             'bloodGroup' => ['required', Rule::in(self::BLOOD_GROUPS)],
             'address' => ['required', 'string', 'min:6', 'max:1000'],
-            'emergency' => ['required', self::MOBILE, 'different:whatsapp'],
-            'medical' => ['required', 'string', 'min:2', 'max:2000'],
+            'emergency' => ['nullable', self::MOBILE, 'different:whatsapp'],
+            'medical' => ['nullable', 'string', 'min:2', 'max:2000'],
             'privacy' => ['accepted'],
         ];
     }
@@ -65,8 +65,8 @@ final class RegistrationForm
             'dob' => $data['dob'],
             'blood_group' => $data['bloodGroup'],
             'address' => $data['address'],
-            'emergency_contact' => $data['emergency'],
-            'medical_history' => $data['medical'],
+            'emergency_contact' => $data['emergency'] ?? null,
+            'medical_history' => $data['medical'] ?? null,
             'privacy_accepted_at' => now(),
         ];
     }

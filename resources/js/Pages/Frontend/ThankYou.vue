@@ -161,11 +161,12 @@ function downloadQr() {
 
                 <ul class="thanks-facts">
                     <li><b>Date</b><span>Sunday, 13 December 2026</span></li>
+                    <li><b>Reporting time</b><span>6:30 AM</span></li>
                     <li><b>Start &amp; finish</b><span>Salt Lake Stadium, Kolkata</span></li>
                     <li><b>Distance</b><span>4 km walk</span></li>
                 </ul>
 
-                <p class="small">Reporting time and bib collection details will be shared by email and WhatsApp closer to the event.</p>
+                <p class="small">Bib collection details will be shared by email and WhatsApp closer to the event.</p>
                 <Link class="btn outline" href="/">&larr; Back to home</Link>
             </div>
 

@@ -28,6 +28,7 @@ const rows = computed(() => {
         ["Registered", fmtDateTime(r.registered_at)],
         ["Added by", "created_by" in r ? r.created_by || "Website" : null],
         ["Confirmation email", "mail_sent_at" in r ? (r.mail_sent_at ? `Sent ${fmtDateTime(r.mail_sent_at)}` : "Not sent") : null],
+        ["WhatsApp message", "whatsapp_sent_at" in r ? (r.whatsapp_sent_at ? `Sent ${fmtDateTime(r.whatsapp_sent_at)}` : "Not sent") : null],
     ].filter(([, v]) => v != null && v !== "");
 });
 

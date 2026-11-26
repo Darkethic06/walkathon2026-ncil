@@ -26,6 +26,7 @@ class WalkathonRegistration extends Model
         'medical_history',
         'privacy_accepted_at',
         'mail_sent_at',
+        'whatsapp_sent_at',
         'created_by',
     ];
 
@@ -35,6 +36,7 @@ class WalkathonRegistration extends Model
             'dob' => 'date:Y-m-d',
             'privacy_accepted_at' => 'datetime',
             'mail_sent_at' => 'datetime',
+            'whatsapp_sent_at' => 'datetime',
             'attended_at' => 'datetime',
         ];
     }
@@ -111,6 +113,7 @@ class WalkathonRegistration extends Model
                 'address' => $this->address,
                 'medical_history' => $this->medical_history,
                 'mail_sent_at' => $this->mail_sent_at?->toIso8601String(),
+                'whatsapp_sent_at' => $this->whatsapp_sent_at?->toIso8601String(),
                 'created_by' => $this->createdBy?->full_name,
             ];
         }

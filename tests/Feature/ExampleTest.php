@@ -1,10 +1,13 @@
 <?php
 
 use App\Jobs\SendBibConfirmationMail;
+use App\Jobs\SendBibWhatsApp;
 use App\Mail\BibConfirmationMail;
 use App\Models\SupportTicket;
 use App\Models\WalkathonRegistration;
+use App\Support\RegistrationForm;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 
 it('renders the walkathon home page', function () {
@@ -127,6 +130,17 @@ it('rejects a second registration with the same email or WhatsApp number', funct
     expect(WalkathonRegistration::count())->toBe(1);
 });
 
+it('accepts a registration without emergency contact or medical history', function () {
+    Bus::fake();
+
+    $this->post('/register', validRegistration(['emergency' => '', 'medical' => '']))
+        ->assertSessionHasNoErrors();
+
+    $registration = WalkathonRegistration::firstOrFail();
+    expect($registration->emergency_contact)->toBeNull()
+        ->and($registration->medical_history)->toBeNull();
+});
+
 it('rejects an emergency number that matches the WhatsApp number', function () {
     $this->post('/register', validRegistration(['emergency' => '9876543210']))
         ->assertSessionHasErrors(['emergency' => 'Emergency contact must be different from your WhatsApp number.']);
@@ -138,4 +152,67 @@ it('requires participants to be at least 5 years old', function () {
 
     $this->post('/register', validRegistration(['dob' => now()->subYears(5)->toDateString()]))
         ->assertSessionHasNoErrors();
+});
+
+it('sends the bib number and thank-you link on WhatsApp through WATI', function () {
+    config(['services.wati.endpoint' => 'https://live-mt-server.wati.io/12345', 'services.wati.token' => 'Bearer secret']);
+    Http::fake(['*' => Http::response(['result' => true])]);
+    $registration = WalkathonRegistration::create(RegistrationForm::toAttributes(validRegistration()));
+    SendBibWhatsApp::dispatchSync($registration);
+
+    Http::assertSent(fn ($request) => $request->url() === 'https://live-mt-server.wati.io/12345/api/v1/sendTemplateMessage?whatsappNumber=919876543210'
+        && $request->hasHeader('Authorization', 'Bearer secret')
+        && $request['template_name'] === 'walkathon_bib_confirmation'
+        && $request['parameters'] === [
+            ['name' => 'name', 'value' => 'Asha'],
+            ['name' => 'bib_number', 'value' => $registration->bib_number],
+            ['name' => 'thank_you_link', 'value' => route('frontend.thankyou', $registration->token)],
+        ]);
+    expect($registration->fresh()->whatsapp_sent_at)->not->toBeNull();
+});
+
+it('logs a refused WhatsApp message and leaves it unsent', function () {
+    config(['services.wati.endpoint' => 'https://wati.test', 'services.wati.token' => 'secret']);
+    Http::fake(['*' => Http::response(['result' => false, 'info' => 'Template not approved'])]);
+    $registration = WalkathonRegistration::create(RegistrationForm::toAttributes(validRegistration()));
+    SendBibWhatsApp::dispatchSync($registration);
+
+    expect($registration->fresh()->whatsapp_sent_at)->toBeNull();
+});
+
+it('skips WhatsApp when WATI is not configured', function () {
+    config(['services.wati.endpoint' => null, 'services.wati.token' => null]);
+    Http::fake();
+    SendBibWhatsApp::dispatchSync(WalkathonRegistration::create(RegistrationForm::toAttributes(validRegistration())));
+
+    Http::assertNothingSent();
+});
+
+it('sends through the WATI v3 API when the endpoint is a v3 one', function () {
+    config(['services.wati.endpoint' => 'https://live-mt-server.wati.io/api/ext/v3', 'services.wati.token' => 'secret']);
+    Http::fake(['*' => Http::response(['success' => true, 'broadcast_id' => 'b1', 'recipients' => [
+        ['local_message_id' => 'm1', 'phone_number' => '919876543210', 'errors' => []],
+    ]])]);
+    $registration = WalkathonRegistration::create(RegistrationForm::toAttributes(validRegistration()));
+
+    SendBibWhatsApp::dispatchSync($registration);
+
+    Http::assertSent(fn ($request) => $request->url() === 'https://live-mt-server.wati.io/api/ext/v3/messageTemplates/send'
+        && $request->hasHeader('Authorization', 'Bearer secret')
+        && $request['template_name'] === 'walkathon_bib_confirmation'
+        && $request['recipients'][0]['phone_number'] === '919876543210'
+        && $request['recipients'][0]['custom_params'][1] === ['name' => 'bib_number', 'value' => $registration->bib_number]);
+    expect($registration->fresh()->whatsapp_sent_at)->not->toBeNull();
+});
+
+it('treats a v3 recipient error as a failed WhatsApp send', function () {
+    config(['services.wati.endpoint' => 'https://live-mt-server.wati.io/api/ext/v3', 'services.wati.token' => 'secret']);
+    Http::fake(['*' => Http::response(['success' => true, 'recipients' => [
+        ['phone_number' => '919876543210', 'errors' => ['Invalid WhatsApp number']],
+    ]])]);
+    $registration = WalkathonRegistration::create(RegistrationForm::toAttributes(validRegistration()));
+
+    SendBibWhatsApp::dispatchSync($registration);
+
+    expect($registration->fresh()->whatsapp_sent_at)->toBeNull();
 });

@@ -99,10 +99,11 @@ const regV = makeValidator(reg, {
     bloodGroup: (v) => v !== "" || "Select your blood group.",
     address: (v) => v.trim().length >= 6 || "Enter your full address.",
     emergency: (v) => {
+        if (v === "") return true;
         if (!MOBILE.test(v)) return "Enter a 10 digit emergency number.";
         return v !== reg.whatsapp || "Emergency contact must be different from your WhatsApp number.";
     },
-    medical: (v) => v.trim().length >= 2 || 'Write your medical history, or "None".',
+    medical: (v) => v.trim().length !== 1 || "Write a little more, or leave it blank.",
     privacy: (v) => v === true || "Please accept the Privacy Policy to continue.",
 });
 
@@ -436,15 +437,15 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="field" :class="{ invalid: regV.errors.emergency }">
-                    <label for="emg">Emergency contact number <span class="req">*</span></label>
-                    <input id="emg" v-model="reg.emergency" name="emergency" type="tel" inputmode="numeric" maxlength="10" placeholder="Someone we can call on the day" required
+                    <label for="emg">Emergency contact number</label>
+                    <input id="emg" v-model="reg.emergency" name="emergency" type="tel" inputmode="numeric" maxlength="10" placeholder="Someone we can call on the day"
                         @blur="regV.check('emergency')" @input="regV.recheck('emergency')" />
                     <small class="err">{{ regV.errors.emergency }}</small>
                 </div>
 
                 <div class="field" :class="{ invalid: regV.errors.medical }">
-                    <label for="med">Any medical history <span class="req">*</span></label>
-                    <textarea id="med" v-model="reg.medical" name="medical" rows="3" placeholder='Allergies, surgeries, medicines, conditions. Write "None" if there is nothing.' required
+                    <label for="med">Any medical history</label>
+                    <textarea id="med" v-model="reg.medical" name="medical" rows="3" placeholder="Allergies, surgeries, medicines, conditions. Leave blank if there is nothing."
                         @blur="regV.check('medical')" @input="regV.recheck('medical')"></textarea>
                     <small class="err">{{ regV.errors.medical }}</small>
                 </div>
@@ -505,8 +506,7 @@ onBeforeUnmount(() => {
                         <span class="q-text">Who do I contact for help?</span>
                         <span class="chev" aria-hidden="true"></span>
                     </summary>
-                    <!-- TODO: add the organiser's phone number and email -->
-                    <p>Add the organiser's phone number and email here.</p>
+                    <p>Need Help contact <a href="tel:+916292343601">+91 62923 43601</a></p>
                 </details>
             </div>
         </div>

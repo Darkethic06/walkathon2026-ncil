@@ -24,6 +24,15 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // WhatsApp Business API (WATI). Sending is off until endpoint + token are set.
+    'wati' => [
+        'endpoint' => env('WATI_API_ENDPOINT'),
+        'token' => env('WATI_API_TOKEN'),
+        'bib_template' => env('WATI_BIB_TEMPLATE', 'walkathon_bib_confirmation'),
+        'broadcast_name' => env('WATI_BROADCAST_NAME', 'walkathon_bib'),
+        'country_code' => env('WATI_COUNTRY_CODE', '91'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

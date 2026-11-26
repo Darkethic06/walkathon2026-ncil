@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\SendBibConfirmationMail;
+use App\Jobs\SendBibWhatsApp;
 use App\Models\WalkathonRegistration;
 use App\Support\RegistrationForm;
 use Illuminate\Http\Request;
@@ -17,9 +18,9 @@ class RegistrationController extends Controller
 
         $registration = WalkathonRegistration::create(RegistrationForm::toAttributes($data));
 
-        // Email the bib number + QR code once the redirect has gone out.
-        // TODO: WhatsApp confirmation (needs a WhatsApp Business API provider).
+        // Email (bib + QR) and WhatsApp (bib + thank-you link) once the redirect has gone out.
         SendBibConfirmationMail::dispatchAfterResponse($registration);
+        SendBibWhatsApp::dispatchAfterResponse($registration);
 
         return redirect()->route('frontend.thankyou', $registration->token);
     }
