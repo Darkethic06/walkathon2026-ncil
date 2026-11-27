@@ -130,6 +130,17 @@ it('rejects a second registration with the same email or WhatsApp number', funct
     expect(WalkathonRegistration::count())->toBe(1);
 });
 
+it('accepts registrations without an email and skips the bib email', function () {
+    Bus::fake();
+
+    $this->post('/register', validRegistration(['email' => '']))->assertSessionHasNoErrors();
+    $this->post('/register', validRegistration(['email' => '', 'whatsapp' => '9000000001']))->assertSessionHasNoErrors();
+
+    expect(WalkathonRegistration::whereNull('email')->count())->toBe(2);
+    Bus::assertNotDispatchedAfterResponse(SendBibConfirmationMail::class);
+    Bus::assertDispatchedAfterResponse(SendBibWhatsApp::class);
+});
+
 it('accepts a registration without emergency contact or medical history', function () {
     Bus::fake();
 

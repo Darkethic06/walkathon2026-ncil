@@ -90,7 +90,7 @@ const regV = makeValidator(reg, {
     firstName: (v) => v.trim().length >= 2 || "Enter your first name.",
     lastName: (v) => v.trim().length >= 1 || "Enter your last name.",
     gender: (v) => !!v || "Select male or female.",
-    email: (v) => EMAIL.test(v) || "Enter a valid email, like name@example.com.",
+    email: (v) => v.trim() === "" || EMAIL.test(v.trim()) || "Enter a valid email, like name@example.com, or leave it blank.",
     whatsapp: (v) => MOBILE.test(v) || "Enter a 10 digit mobile number.",
     dob: (v) => {
         if (!v) return "Pick your date of birth from the calendar.";
@@ -398,8 +398,8 @@ onBeforeUnmount(() => {
                 </fieldset>
 
                 <div class="field" :class="{ invalid: regV.errors.email }">
-                    <label for="email">Email <span class="req">*</span></label>
-                    <input id="email" v-model="reg.email" name="email" type="email" autocomplete="email" required
+                    <label for="email">Email</label>
+                    <input id="email" v-model="reg.email" name="email" type="email" autocomplete="email"
                         @blur="regV.check('email')" @input="regV.recheck('email')" />
                     <small class="err">{{ regV.errors.email }}</small>
                 </div>

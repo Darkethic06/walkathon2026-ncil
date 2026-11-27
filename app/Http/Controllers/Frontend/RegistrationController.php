@@ -19,7 +19,9 @@ class RegistrationController extends Controller
         $registration = WalkathonRegistration::create(RegistrationForm::toAttributes($data));
 
         // Email (bib + QR) and WhatsApp (bib + thank-you link) once the redirect has gone out.
-        SendBibConfirmationMail::dispatchAfterResponse($registration);
+        if ($registration->email) {
+            SendBibConfirmationMail::dispatchAfterResponse($registration);
+        }
         SendBibWhatsApp::dispatchAfterResponse($registration);
 
         return redirect()->route('frontend.thankyou', $registration->token);

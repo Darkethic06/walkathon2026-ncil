@@ -154,7 +154,7 @@ function downloadQr() {
                     You're registered for the <strong>Annual Walkathon 2026</strong>. Here is your bib number and QR code.
                     Show the QR code at the bib collection desk.
                 </p>
-                <p class="thanks-mail">
+                <p v-if="registration.email" class="thanks-mail">
                     We've also sent this to <strong>{{ registration.email }}</strong>.
                     If you can't find it, check your spam folder.
                 </p>

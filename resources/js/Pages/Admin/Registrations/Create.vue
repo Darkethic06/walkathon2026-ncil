@@ -84,7 +84,7 @@ const err = "mt-1 text-sm text-red-600";
 
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
-                <label for="email" :class="label">Email *</label>
+                <label for="email" :class="label">Email</label>
                 <input id="email" v-model="form.email" type="email" :class="input" autocomplete="off" />
                 <p v-if="form.errors.email" data-error :class="err">{{ form.errors.email }}</p>
             </div>
@@ -137,8 +137,8 @@ const err = "mt-1 text-sm text-red-600";
             <p v-if="form.errors.privacy" data-error :class="err">{{ form.errors.privacy }}</p>
 
             <label class="flex items-start gap-3 text-sm text-gray-700">
-                <input v-model="form.sendEmail" type="checkbox" class="mt-0.5 h-5 w-5 flex-none rounded border-gray-300 text-teal-700 focus:ring-teal-600" />
-                <span>Email the bib number and QR code to the walker</span>
+                <input v-model="form.sendEmail" :disabled="!form.email.trim()" type="checkbox" class="mt-0.5 h-5 w-5 flex-none rounded border-gray-300 text-teal-700 focus:ring-teal-600" />
+                <span>Email the bib number and QR code to the walker<span v-if="!form.email.trim()" class="text-gray-400"> (no email entered)</span></span>
             </label>
 
             <label class="flex items-start gap-3 text-sm text-gray-700">

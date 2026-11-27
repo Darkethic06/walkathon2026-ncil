@@ -67,7 +67,7 @@ class RegistrationController extends Controller
             RegistrationForm::toAttributes($data) + ['created_by' => $request->user()->id]
         );
 
-        if ($request->boolean('sendEmail')) {
+        if ($request->boolean('sendEmail') && $registration->email) {
             SendBibConfirmationMail::dispatchAfterResponse($registration);
         }
         if ($request->boolean('sendWhatsApp')) {
