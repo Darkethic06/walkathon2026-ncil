@@ -23,6 +23,11 @@ class SendBibWhatsApp
     public function handle(Wati $wati): void
     {
         if (! Wati::enabled()) {
+            // Usually a missing WATI_* key in the server .env, or a stale `php artisan optimize` cache.
+            Log::warning('Walkathon bib WhatsApp skipped: WATI is not configured', [
+                'registration_id' => $this->registration->id,
+            ]);
+
             return;
         }
 
