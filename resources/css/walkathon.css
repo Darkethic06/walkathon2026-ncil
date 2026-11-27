@@ -256,6 +256,7 @@ body.modal-open{overflow:hidden}
 .policy-card{background:#fff;border-radius:22px;border-top:6px solid var(--gold);padding:40px 44px;box-shadow:0 18px 50px rgba(11,59,77,.12)}
 .policy-card h3{font-family:'Playfair Display',serif;font-weight:800;color:var(--navy);font-size:1.4rem;margin:1.8rem 0 .6rem}
 .policy-card h3:first-of-type{margin-top:0}
+.policy-card h4{font-weight:700;color:var(--navy);font-size:1.05rem;margin:1.1rem 0 .5rem}
 .policy-card p,.policy-card li{color:#33495a}
 .policy-card ul{margin:0 0 1rem;padding-left:0;list-style:none}
 .policy-card li{position:relative;padding-left:26px;margin-bottom:.5rem}
