@@ -20,6 +20,7 @@ const rows = computed(() => {
         ["Age", r.age != null ? `${r.age} years` : null],
         ["Blood group", r.blood_group],
         ["Emergency contact", r.emergency_contact],
+        ["Employee", "is_employee" in r ? (r.is_employee ? "Yes" : "No") : null],
         ["WhatsApp", r.whatsapp],
         ["Email", r.email],
         ["Date of birth", r.dob ? fmtDate(r.dob) : null],

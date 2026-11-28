@@ -20,6 +20,7 @@ const form = useForm({
     emergency: "",
     medical: "",
     privacy: false,
+    employee: false,
     sendEmail: true,
     sendWhatsApp: true,
 });
@@ -135,6 +136,11 @@ const err = "mt-1 text-sm text-red-600";
                 <span>The walker has agreed to the Privacy Policy and confirmed they are fit to walk 4 km. *</span>
             </label>
             <p v-if="form.errors.privacy" data-error :class="err">{{ form.errors.privacy }}</p>
+
+            <label class="flex items-start gap-3 text-sm text-gray-700">
+                <input v-model="form.employee" type="checkbox" class="mt-0.5 h-5 w-5 flex-none rounded border-gray-300 text-teal-700 focus:ring-teal-600" />
+                <span>The walker is an employee.</span>
+            </label>
 
             <label class="flex items-start gap-3 text-sm text-gray-700">
                 <input v-model="form.sendEmail" :disabled="!form.email.trim()" type="checkbox" class="mt-0.5 h-5 w-5 flex-none rounded border-gray-300 text-teal-700 focus:ring-teal-600" />

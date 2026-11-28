@@ -155,7 +155,8 @@ it('lets an admin download registrations as an Excel file', function () {
         ->and($rows[1][0])->toBe($this->walker->bib_number)
         ->and($rows[1][8])->toBe('9876543210')   // WhatsApp kept as text
         ->and($rows[1][11])->toBe('Asthma')
-        ->and($rows[1][13])->toBe('Website');
+        ->and($rows[1][12])->toBe('No')         // Employee
+        ->and($rows[1][14])->toBe('Website');
 });
 
 it('applies the list filter to the Excel export', function () {
@@ -179,7 +180,7 @@ it('lets an admin add a registration and optionally email the bib', function () 
         'firstName' => 'Ravi', 'lastName' => 'Das', 'gender' => 'Male',
         'email' => 'ravi@example.com', 'whatsapp' => '9000000002', 'dob' => '1985-01-15',
         'bloodGroup' => 'B+', 'address' => 'New Town, Kolkata', 'emergency' => '9000000003',
-        'medical' => 'None', 'privacy' => true, 'sendEmail' => true,
+        'medical' => 'None', 'privacy' => true, 'employee' => true, 'sendEmail' => true,
     ];
 
     $this->actingAs($this->admin)->post(route('admin.registrations.store'), $data)
@@ -187,7 +188,8 @@ it('lets an admin add a registration and optionally email the bib', function () 
 
     $ravi = WalkathonRegistration::where('email', 'ravi@example.com')->firstOrFail();
     expect($ravi->created_by)->toBe($this->admin->id)
-        ->and($ravi->bib_number)->toStartWith('4');
+        ->and($ravi->bib_number)->toStartWith('4')
+        ->and($ravi->is_employee)->toBeTrue();
     Illuminate\Support\Facades\Bus::assertDispatchedAfterResponse(App\Jobs\SendBibConfirmationMail::class);
 });
 

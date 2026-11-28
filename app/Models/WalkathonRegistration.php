@@ -24,6 +24,7 @@ class WalkathonRegistration extends Model
         'address',
         'emergency_contact',
         'medical_history',
+        'is_employee',
         'privacy_accepted_at',
         'mail_sent_at',
         'whatsapp_sent_at',
@@ -34,6 +35,7 @@ class WalkathonRegistration extends Model
     {
         return [
             'dob' => 'date:Y-m-d',
+            'is_employee' => 'boolean',
             'privacy_accepted_at' => 'datetime',
             'mail_sent_at' => 'datetime',
             'whatsapp_sent_at' => 'datetime',
@@ -100,6 +102,7 @@ class WalkathonRegistration extends Model
             'age' => $this->dob?->age,
             'blood_group' => $this->blood_group,
             'emergency_contact' => $this->emergency_contact,
+            'is_employee' => $this->is_employee,
             'registered_at' => $this->created_at?->toIso8601String(),
             'attended_at' => $this->attended_at?->toIso8601String(),
             'attended_by' => $this->attendedBy?->full_name,

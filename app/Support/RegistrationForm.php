@@ -36,6 +36,7 @@ final class RegistrationForm
             'address' => ['required', 'string', 'min:6', 'max:1000'],
             'emergency' => ['nullable', self::MOBILE, 'different:whatsapp'],
             'medical' => ['nullable', 'string', 'min:2', 'max:2000'],
+            'employee' => ['nullable', 'boolean'],
             'privacy' => ['accepted'],
         ];
     }
@@ -67,6 +68,7 @@ final class RegistrationForm
             'address' => $data['address'],
             'emergency_contact' => $data['emergency'] ?? null,
             'medical_history' => $data['medical'] ?? null,
+            'is_employee' => (bool) ($data['employee'] ?? false),
             'privacy_accepted_at' => now(),
         ];
     }

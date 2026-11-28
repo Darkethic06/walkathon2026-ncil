@@ -96,7 +96,8 @@ class RegistrationController extends Controller
             $options->setColumnWidth(16, 2, 3);       // names
             $options->setColumnWidth(30, 8, 11, 12);  // email, address, medical
             $options->setColumnWidthForRange(15, 4, 7);
-            $options->setColumnWidthForRange(20, 13, 18);
+            $options->setColumnWidth(10, 13);         // employee
+            $options->setColumnWidthForRange(20, 14, 19);
 
             $writer = new Writer($options);
             $writer->openToFile('php://output');
@@ -104,7 +105,7 @@ class RegistrationController extends Controller
             $header = (new Style)->withFontBold(true)->withFontColor('FFFFFF')->withBackgroundColor('0F6478');
             $writer->addRow(Row::fromValuesWithStyle([
                 'Bib', 'First name', 'Last name', 'Gender', 'Age', 'Date of birth', 'Blood group',
-                'Email', 'WhatsApp', 'Emergency contact', 'Address', 'Medical history',
+                'Email', 'WhatsApp', 'Emergency contact', 'Address', 'Medical history', 'Employee',
                 'Registered at', 'Added by', 'Confirmation email', 'Attended', 'Attended at', 'Checked in by',
             ], $header));
 
@@ -126,6 +127,7 @@ class RegistrationController extends Controller
                     (string) $r->emergency_contact,
                     $r->address,
                     $r->medical_history ?? '',
+                    $r->is_employee ? 'Yes' : 'No',
                     $fmt($r->created_at),
                     $r->createdBy?->full_name ?? 'Website',
                     $r->mail_sent_at ? 'Sent' : 'Not sent',

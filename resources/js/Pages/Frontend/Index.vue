@@ -82,6 +82,7 @@ const reg = useForm({
     emergency: "",
     medical: "",
     privacy: false,
+    employee: false,
 });
 digitsOnly(reg, "whatsapp");
 digitsOnly(reg, "emergency");
@@ -456,6 +457,13 @@ onBeforeUnmount(() => {
                         <span>I have read and agree to the <a :href="route('frontend.privacy')" target="_blank" rel="noopener">Privacy Policy</a>. By registering, I confirm that the details provided above are correct and that I am physically fit to participate in a 4 km walk.</span>
                     </label>
                     <small class="err">{{ regV.errors.privacy }}</small>
+                </div>
+
+                <div class="field">
+                    <label class="check" for="employee">
+                        <input id="employee" v-model="reg.employee" name="employee" type="checkbox" />
+                        <span>Are you an employee?</span>
+                    </label>
                 </div>
 
                 <button class="btn full" type="submit" :disabled="reg.processing">
